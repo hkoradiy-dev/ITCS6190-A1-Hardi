@@ -49,33 +49,35 @@ def main():
 
         # Average fare by city
         cur.execute("""
-            SELECT city, AVG(fare)
+            SELECT city, ROUND(AVG(fare), 2) AS avg_fare
             FROM trips
             GROUP BY city
-            ORDER BY city;
+            ORDER BY city ASC;
         """)
 
         by_city = [
-            {"city": c, "avg_fare": float(a)}
-            for (c, a) in cur.fetchall()
+            {
+                "city": city,
+                "avg_fare": float(avg_fare)
+            }
+            for city, avg_fare in cur.fetchall()
         ]
 
         # Top N trips by minutes
         cur.execute("""
-            SELECT id, city, minutes, fare
+            SELECT city, minutes, fare
             FROM trips
-            ORDER BY minutes DESC
+            ORDER BY minutes DESC, city ASC
             LIMIT %s;
         """, (TOP_N,))
 
         top = [
             {
-                "id": trip_id,
                 "city": city,
                 "minutes": minutes,
                 "fare": float(fare)
             }
-            for trip_id, city, minutes, fare in cur.fetchall()
+            for city, minutes, fare in cur.fetchall()
         ]
 
         summary = {
